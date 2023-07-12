@@ -1,0 +1,179 @@
+Supported Operating Systems
+===========================
+
+TCE requires a Unix-style operating system such as Linux. Debian-based
+distributions like Debian and Ubuntu should have most of the required
+libraries included, but other recent distribution versions should work
+fine too. MacOS support is experimental.
+
+The following installation steps install prerequisities, the TCE-patched
+LLVM and TCE to in $HOME/local.
+
+Installing Prerequisities
+=========================
+
+This step needs root/admin privileges.
+
+For Ubuntus, you need to enable the universe and multiverse repositories first:
+https://help.ubuntu.com/community/Repositories/Ubuntu#Adding_Repositories_in_Ubuntu
+
+Ubuntu 20.04+
+-------------
+
+sudo apt-get install libwxgtk3.0-gtk3-dev libboost-all-dev \
+ tcl8.6-dev libedit-dev libsqlite3-dev sqlite3 libxerces-c-dev g++ make \
+ latex2html libffi-dev autoconf automake libtool subversion git cmake
+ 
+ 
+Ubuntu 16.04 and 18.04
+----------------------
+
+Note! Since Ubuntu might install its own libllvm, it can cause a problem with
+the TCE-patched LLVM at build time. You might need a workaround that is documented
+in this issue https://github.com/cpc/tce/issues/91
+
+  sudo apt-get install libwxgtk3.0-dev libboost-all-dev \
+    tcl8.6-dev libedit-dev libsqlite3-dev sqlite3 libxerces-c-dev g++ make \
+    latex2html libffi-dev autoconf automake libtool subversion git cmake
+
+
+Ubuntu 14.04 LTS
+----------------
+
+  sudo apt-get install libwxgtk2.8-dev libboost-all-dev \
+    tcl8.4-dev libedit-dev libsqlite3-dev sqlite3 libxerces-c2-dev g++ make latex2html \
+    libffi-dev autoconf automake libtool subversion git cmake
+
+Debian 7
+--------
+
+  sudo apt-get install libwxgtk2.8-dev libboost-{filesystem,graph,regex,thread}-dev \
+    tcl8.4-dev libedit-dev libsqlite3-dev sqlite3 libxerces-c2-dev g++ make latex2html \
+    libffi-dev autoconf automake libtool subversion git cmake
+
+CentOS 6.5
+----------
+
+  sudo yum install -y bzr wxGTK-devel boost-devel tcl-devel libedit-devel \
+  sqlite-devel xerces-c-devel gcc-c++ make autoconf automake libtool svn
+
+Get the Latest TCE Source Code
+==============================
+
+  git clone https://github.com/cpc/tce.git tce-devel
+
+Alternatively you can get one of the release branches, e.g.:
+
+  git clone -b release-1.21 https://github.com/cpc/tce.git tce-1.21
+
+LLVM and Clang
+==============
+
+In order to compile programs from C/C++ with TCE, you need to install
+LLVM and Clang with some patches and correct LLVM build switches to fix
+issues affecting TCE use.
+
+You can do this easiest by executing
+
+   cd tce-devel/tce
+   tools/scripts/install_llvm_10.sh $HOME/local
+
+After successful installation, add information about installed libraries to the
+search path. We assume TCE will be installed to the same location later.
+
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/local/lib
+  export PATH=$PATH:$HOME/local/bin
+  export LDFLAGS=-L$HOME/local/lib
+
+You might want to put the above environment variable modification commands to
+your ~/.bashrc or similar so they are taken in effect automatically whenever
+you start a new shell. Otherwise you need to remember to enter them
+before attempting to use LLVM or TCE.
+
+Building and Installing TCE
+===========================
+
+In the root of TCE sources (e.g. tce-devel/tce), run:
+
+  ./autogen.sh && ./configure --prefix=$HOME/local && make -j8 && make install
+
+Now TCE commands such as 'ttasim' should work. Check this with:
+
+  ttasim --version
+
+Now try to run the smoke test script to see if it finds any problems with
+your installation:
+
+Then run the smoke test script:
+
+  tce-selftest -v
+
+If this finished correctly, you are all set! For learning to use TCE, a good
+way is to start with the TCE user manual's tutorials, e.g., the "TCE tour".
+
+Upgrading TCE
+=============
+
+Later on, if you want to update your TCE installation with the latest changes
+committed in the version control system, you can do the following steps:
+
+Update the source code modifications:
+
+  cd tce-devel/tce
+  git pull
+
+Build and install the updated TCE:
+
+  make && make install
+
+Further information of library and tools prerequisite versions
+==============================================================
+
+These are the current prerequisites for libraries and tools required to
+build TCE:
+
+Compiler              supported versions
+-----------------     ------------------
+GCC                   9.0+
+Clang                 9.0+
+
+Library               supported versions                   library license
+-----------------     ------------------                   ---------------
+Xerces-C++            2.3.0+                               Apache v2.0
+wxWidgets             2.8+                                 wxWidgets
+Tcl                   8.0-8.4                              BSD-style
+Boost                 1.48.0-1.53.0                        very permissive
+sqlite3               3.2.0+                               public domain
+LLVM                  9.0-10.0                             LLVM Release License
+Editline              2.9                                  BSD-style
+Python                2.4-2.8                              PSF license
+
+Please remember to install the '-dev' versions of the packages in order to get
+the library headers which are need to compile client code against them.
+You also need a version of "GNU Make" to build TCE.
+
+Editline
+--------
+
+Editline is used for command line editing/history browsing capabilities to
+the command line interface of the simulator.
+
+You can download the sources here: http://www.thrysoee.dk/editline/
+
+Note: this library might require 'termcap' library in some distributions.
+The package is named 'libedit-dev' in Debian-based distributions.
+
+Boost
+-----
+The development files of the following Boost libraries are required by TCE:
+. regexp,
+. spirit,
+. filesystem,
+. format,
+. thread,
+. graph,
+. tuple
+
+Some distributions, like Fedora Core, include all Boost libraries in a
+single package, but some, like Debian, have separated them in several
+packages.
